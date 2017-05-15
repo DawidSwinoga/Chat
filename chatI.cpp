@@ -1,15 +1,15 @@
 
 #include <chatI.h>
 #include <Ice/Ice.h>
-#include <Ice/Identity.h>
 using namespace std;
 
 void
 Chat::ChatServerI::LogIn(const ::Chat::UserPrx& callback,
                          const Ice::Current& current)
 {
-    if (find(users.begin(), users.end(), callback) != users.end())
-        throw NameAlreadyExists();
+    for (Users::iterator it = users.begin(); it != users.end(); ++it)
+        if ((*it)->getName() == callback->getName())
+            throw NameAlreadyExists();
     users.push_back(callback);
 }
 
@@ -36,7 +36,7 @@ Chat::ChatServerI::getGroupServerByName(const ::std::string& name,
     for (Groups::iterator it = groups.begin(); it != groups.end(); ++it)
         if ((*it)->Name() == name)
             return *it;
-    return NULL;
+    throw NameDoesNotExist();
 }
 
 void
@@ -44,9 +44,11 @@ Chat::ChatServerI::CreateGroup(const ::std::string& name,
                                const Ice::Current& current)
 {
     for (Groups::iterator it = groups.begin(); it != groups.end(); ++it)
-        if ((*it)->Name() == name)
+        if ((*it)->Name() == name) {
+            cout << "Group: " << name + " already exist" << endl;
             throw NameAlreadyExists();
-
+        }
+    cout << "New group: " + name << endl;
     GroupServerManagerPrx serverManagerPrx = serverManagers.at(groups.size() % serverManagers.size());
     groups.push_back(serverManagerPrx->CreateGroup(name));
 }
@@ -60,21 +62,25 @@ Chat::ChatServerI::DeleteGroup(const ::std::string& name,
         if ((*it)->Name() == name)
             break;
 
-    if (it == groups.end())
+    if (it == groups.end()) {
+        cout << "Group: " + name + "does not exist" << endl;
         throw NameDoesNotExist();
+    }
 
     GroupServerPrx groupServerPrx = *it;
 
-    vector<IceInternal::ProxyHandle<IceProxy::Chat::GroupServerManager>>::iterator managerIt;
+    vector<IceInternal::ProxyHandle<IceProxy::Chat::GroupServerManager> >::iterator managerIt;
     for (managerIt = serverManagers.begin(); managerIt != serverManagers.end(); ++managerIt ) {
         Groups groups = (*managerIt)->ListGroups();
         if(find(groups.begin(), groups.end(), groupServerPrx) != groups.end()) {
             (*managerIt)->DeleteGroup(groupServerPrx->Name());
             this->groups.erase(it);
+            cout << "Group: " + name + " deleted" << endl;
             return;
         }
     }
 
+    cout << "Group: " + name + "does not exist" << endl;
     throw NameDoesNotExist();
 }
 
@@ -82,22 +88,28 @@ void
 Chat::ChatServerI::registerServer(const ::Chat::GroupServerManagerPrx& serverManager,
                                   const Ice::Current& current)
 {
-    if (find(serverManagers.begin(), serverManagers.end(), serverManager) != serverManagers.end())
+    if (find(serverManagers.begin(), serverManagers.end(), serverManager) != serverManagers.end()) {
+        cout << "Group server manager already exist" << endl;
         throw ServerAlreadyRegistered();
+    }
 
     serverManagers.push_back(serverManager);
+    cout << "Add new group server manager" << endl;
 }
 
 void
 Chat::ChatServerI::unregisterServer(const ::Chat::GroupServerManagerPrx& serverManager,
                                     const Ice::Current& current)
 {
-    vector<IceInternal::ProxyHandle<IceProxy::Chat::GroupServerManager>>::iterator it =
+    vector<IceInternal::ProxyHandle<IceProxy::Chat::GroupServerManager> >::iterator it =
             find(serverManagers.begin(), serverManagers.end(), serverManager);
-    if (it == serverManagers.end())
+    if (it == serverManagers.end()) {
+        cout << "Server group manager does not exist" << endl;
         throw ServerDoesNotExist();
+    }
 
     serverManagers.erase(it);
+    cout << "Server group manager removed" << endl;
 }
 
 void
@@ -126,12 +138,16 @@ Chat::GroupServerI::SendMessage(const ::std::string& message,
                                 const ::Chat::UserPrx& sender,
                                 const Ice::Current& current)
 {
-    if (find(users.begin(), users.end(), sender) == users.end())
+    Users::iterator it;
+    for (it = users.begin(); it != users.end(); ++it)
+        if ((*it)->getName() == sender->getName())
+            break;
+
+    if (it == users.end())
         throw UserDoesNotExist();
 
-
     GroupServerPrx groupServerPrx = GroupServerPrx::uncheckedCast(current.adapter->createProxy(current.id));
-    for(Users::iterator it = users.begin(); it != users.end(); ++it)
+    for(it = users.begin(); it != users.end(); ++it)
         (*it)->receiveText(message, sender, groupServerPrx);
 }
 
@@ -222,7 +238,7 @@ Chat::UserI::receiveText(const ::std::string& msg,
 {
     string groupName = gServer->Name();
     string senderName = sender->getName();
-    cout << "Group " << groupName << ": " << senderName << ": " << msg;
+    cout << "Group " << groupName << ": " << senderName << ": " << msg << endl;
 }
 
 void
@@ -230,5 +246,9 @@ Chat::UserI::receivePrivateText(const ::std::string& msg,
                                 const ::Chat::UserPrx& sender,
                                 const Ice::Current& current)
 {
-    cout << "Priv from: " + sender->getName() + "message: " + msg;
+    cout << "Priv from: " + sender->getName() + "message: " + msg << endl;
+}
+
+Chat::UserI::UserI(string name) {
+    this->username = name;
 }
