@@ -87,6 +87,7 @@ private:
 class UserI : virtual public User
 {
 public:
+    UserI(string name);
 
     virtual ::std::string getName(const Ice::Current&);
 
