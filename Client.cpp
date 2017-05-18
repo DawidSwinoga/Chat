@@ -30,8 +30,10 @@ class ClientApp : virtual public Ice::Application {
     }
 
     void deleteGroup() {
+        string name = getName();
         try {
-            chatServerPrx->DeleteGroup(getName());
+            if (name == groupServerPrx->Name())
+                chatServerPrx->DeleteGroup(name);
         } catch (const NameDoesNotExist &ex) {
             cout << "Name does not exist" << endl;
         }
@@ -64,6 +66,9 @@ class ClientApp : virtual public Ice::Application {
             groupServerPrx->SendMessage(message, userPrx);
         } catch (const UserDoesNotExist &ex) {
             cout << "You are not a registered user" << endl;
+        } catch (const Ice::ObjectNotExistException &ex) {
+            cout << "Group is not available" << endl;
+            groupServerPrx = NULL;
         }
     }
 
