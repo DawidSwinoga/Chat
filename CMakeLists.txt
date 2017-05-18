@@ -8,14 +8,14 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 find_package(Ice 3.4.0 REQUIRED Ice IceUtil Glacier2)
 include_directories (${Ice_INCLUDE_DIRS})
 
-set(CLIENT_FILES Client.cpp chat.cpp chat.h chatI.cpp chatI.h)
+set(CLIENT_FILES Client.cpp chat.cpp chat.h User.h User.cpp)
 add_executable(client ${CLIENT_FILES})
 target_link_libraries (client ${Ice_LIBRARIES} pthread)
 
-set(GROUP_SERVER_MANAGER_FILES ServerManager.cpp chat.cpp chat.h chatI.cpp chatI.h)
+set(GROUP_SERVER_MANAGER_FILES ServerManager.cpp chat.cpp chat.h GroupServerManager.h GroupServerManager.cpp ChatServer.h ChatServer.cpp GroupServer.h GroupServer.cpp)
 add_executable(group_server_manager ${GROUP_SERVER_MANAGER_FILES})
 target_link_libraries (group_server_manager ${Ice_LIBRARIES} pthread)
 
-set(CHAT_SERVER_FILES Server.cpp chat.cpp chat.h chatI.cpp chatI.h)
+set(CHAT_SERVER_FILES Server.cpp chat.cpp chat.h ChatServer.cpp ChatServer.h)
 add_executable(chat_server ${CHAT_SERVER_FILES})
 target_link_libraries (chat_server ${Ice_LIBRARIES} pthread)

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <Ice/Ice.h>
-#include <chatI.h>
+#include "chat.h"
+#include "User.h"
 
 using namespace std;
 using namespace Chat;
@@ -136,7 +137,7 @@ class ClientApp : virtual public Ice::Application {
     }
 
     void initAdapter() {
-        adapter = communicator()->createObjectAdapterWithEndpoints("ClientAdapter", "default -p 10015");
+        adapter = communicator()->createObjectAdapterWithEndpoints("ClientAdapter", "default -p 10021");
     }
 
     void displayMenu() {

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <Ice/Ice.h>
-#include "chatI.h"
+#include "chat.h"
+#include "GroupServerManager.h"
 
 using namespace std;
 using namespace Chat;
