@@ -236,8 +236,8 @@ Chat::UserI::receiveText(const ::std::string& msg,
                          const ::Chat::GroupServerPrx& gServer,
                          const Ice::Current& current)
 {
-    string groupName = gServer->Name();
     string senderName = sender->getName();
+    string groupName = gServer->ice_getIdentity().name;
     cout << "Group " << groupName << ": " << senderName << ": " << msg << endl;
 }
 
