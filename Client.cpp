@@ -16,6 +16,8 @@ class ClientApp : virtual public Ice::Application {
         string name;
         cout << "name: ";
         cin >> name;
+        std::cin.clear();
+        std::cin.ignore(1000, '\n');
         return name;
     }
 
@@ -60,7 +62,9 @@ class ClientApp : virtual public Ice::Application {
     void sendGroupMessage() {
         cout << "Message: ";
         string message;
-        cin >> message;
+        std::cin.clear();
+        std::cin.ignore(1000, '\n');
+        getline(cin, message, '\n');
 
         try {
             groupServerPrx->SendMessage(message, userPrx);
@@ -81,7 +85,9 @@ class ClientApp : virtual public Ice::Application {
 
         string message;
         cout << "message: ";
-        cin >> message;
+        getline(cin, message);
+        std::cin.clear();
+        std::cin.ignore();
         user->receivePrivateText(message, userPrx);
     }
 
@@ -93,8 +99,14 @@ class ClientApp : virtual public Ice::Application {
 
         while (true) {
             displayMenu();
-            cout << "Option: ";
-            cin >> option;
+            do {
+                std::cin.clear();
+                std::cin.ignore(1000, '\n');
+                cout << "Option: ";
+                cin >> option;
+            } while (cin.fail());
+
+            fflush(stdin);
 
             switch (option) {
                 case 1:
@@ -142,7 +154,8 @@ class ClientApp : virtual public Ice::Application {
     }
 
     void initAdapter() {
-        adapter = communicator()->createObjectAdapterWithEndpoints("ClientAdapter", "default -p 10021");
+        adapter = communicator()->createObjectAdapterWithEndpoints("ClientAdapter", "default -p 10033"
+                "");
     }
 
     void displayMenu() {

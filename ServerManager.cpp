@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     try {
         ic = Ice::initialize(argc, argv);
         Ice::ObjectAdapterPtr adapter =
-                ic->createObjectAdapterWithEndpoints("ServerManagerAdapter", "default -p 10003");
+                ic->createObjectAdapterWithEndpoints("ServerManagerAdapter", "default -p 10004");
         GroupServerManagerPtr groupServerManagerPtr = new GroupServerManagerI();
         GroupServerManagerPrx groupServerManagerPrx =
                 GroupServerManagerPrx::uncheckedCast(adapter->addWithUUID(groupServerManagerPtr));
